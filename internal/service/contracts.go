@@ -3,6 +3,7 @@ package service
 import (
 	"WarehouseTgBot/internal/database"
 	"context"
+	"time"
 )
 
 type usersRepository interface {
@@ -24,4 +25,5 @@ type operationRepository interface {
 	FindLastOperationForCategory(ctx context.Context, categoryID int64) (database.Operation, error)
 	RemoveLastOperationForCategory(ctx context.Context, categoryID int64) (database.Operation, error)
 	ShowCurrentBalancePerCategory(ctx context.Context) ([]database.CurrBalanceRow, error)
+	GetOperationsHistory(ctx context.Context, startTime time.Time) (string, error)
 }

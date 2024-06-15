@@ -11,13 +11,10 @@ import (
 
 var AiKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Ретроспективный ИИ анализ", state.RetroAI),
+		tgbotapi.NewInlineKeyboardButtonData("Проанализирировать бизнес с ИИ", state.CallAI),
 	),
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Предиктивный ИИ анализ", state.FutureAI),
-	),
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Общение с ИИ", state.CallAI),
+		tgbotapi.NewInlineKeyboardButtonData("Закрыть диалог с ИИ", state.CloseAI),
 	),
 )
 

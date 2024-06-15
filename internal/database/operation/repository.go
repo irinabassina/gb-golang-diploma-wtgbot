@@ -129,3 +129,49 @@ func (r *Repository) ShowCurrentBalancePerCategory(ctx context.Context) ([]datab
 
 	return balanceRows, nil
 }
+
+func (r *Repository) GetOperationsHistory(ctx context.Context, startTime time.Time) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+
+	query :=
+		`SELECT (goods.id,
+			   goods.name,
+			   goods.unit,
+			   goods.cost,
+			   lastOp.current_balance,
+			   lastOp.created_at,
+			   lastOp.created_by,
+			   lastOp.value) :: TEXT
+		FROM goods
+				 JOIN
+			 (SELECT *
+			  FROM operations
+			  WHERE created_at > $1) as lastOp
+			 ON goods.id = lastOp.category_id
+		ORDER BY lastOp.created_at DESC`
+
+	rows, err := r.db.Query(ctx, query, startTime)
+	if err != nil {
+		return "", fmt.Errorf("postgres Query: %w", err)
+	}
+	defer rows.Close()
+
+	resultCSV := "category_id,category_name,category_unit,category_cost,current_balance,created_at,created_by,value"
+	for rows.Next() {
+		rowStr := ""
+		err := rows.Scan(&rowStr)
+		if err != nil {
+			return "", fmt.Errorf("failed to scan row: %w", err)
+		}
+		rowStr = rowStr[:len(rowStr)-1]
+		rowStr = rowStr[1:]
+		resultCSV = resultCSV + "\n" + rowStr
+	}
+
+	if err := rows.Err(); err != nil {
+		return "", fmt.Errorf("error during rows iteration: %w", err)
+	}
+
+	return resultCSV, nil
+}

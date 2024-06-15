@@ -26,9 +26,8 @@ const (
 	PullItems           = "pull_items"
 	RemoveLastOperation = "remove_last_op"
 
-	RetroAI  = "retro_ai"
-	FutureAI = "future_ai"
-	CallAI   = "call_ai"
+	CallAI  = "call_ai"
+	CloseAI = "close_ai"
 )
 
 func GetStateInputRequest(state string) string {
@@ -55,7 +54,7 @@ func GetStateInputRequest(state string) string {
 		return "Введите ID категории и количество единиц товара к списанию в формате \"id:число_единиц\""
 	case RemoveLastOperation:
 		return "Введите ID категории товара для которого нужно удалить последнюю операция прихода/расхода"
-	case ShowEmployee, ShowCategories, GetBalance, RetroAI, FutureAI:
+	case ShowEmployee, ShowCategories, GetBalance, CloseAI:
 		return ""
 	default:
 		return "Неизвестное состояние"
@@ -106,9 +105,7 @@ func (s *StateMachine) HandleState(update *tgbotapi.Update) error {
 		if _, err := s.bot.Send(msg); err != nil {
 			return err
 		}
-		return nil
-	case CallAI:
-		return handleCallAi(update, s)
+		return handleCloseAi(update, s)
 	case AddEmployee:
 		return handleAddEmployee(update, s)
 	case DisableEmployee:
@@ -131,9 +128,10 @@ func (s *StateMachine) HandleState(update *tgbotapi.Update) error {
 		return handleRemoveOperation(update, s)
 	case GetBalance:
 		return handleShowCurrentBalance(chatId, s)
-	case RetroAI, FutureAI:
-		//TODO implement me
-		return errors.New("reports implementation on the way")
+	case CallAI:
+		return handleCallAi(update, s)
+	case CloseAI:
+		return handleCloseAi(update, s)
 	default:
 		return errors.New("not implemented")
 	}

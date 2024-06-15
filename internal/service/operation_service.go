@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+const PastHistoryDays = 365
+
 func NewOperationService(operationRepository operationRepository, timeout time.Duration) *OperationService {
 	return &OperationService{operationRepository: operationRepository, timeout: timeout}
 }
@@ -55,6 +57,18 @@ func (os *OperationService) ShowCurrentBalance(ctx context.Context) ([]database.
 		return nil, err
 	}
 	return cats, nil
+}
+
+func (os *OperationService) GetOperationsHistory(ctx context.Context) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, os.timeout)
+	defer cancel()
+
+	csvResults, err := os.operationRepository.GetOperationsHistory(ctx,
+		time.Now().AddDate(0, 0, -PastHistoryDays))
+	if err != nil {
+		return "", err
+	}
+	return csvResults, nil
 }
 
 func (os *OperationService) validateCategory(op database.Operation) error {
