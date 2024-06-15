@@ -63,7 +63,7 @@ func handlePullItems(update *tgbotapi.Update, s *StateMachine) error {
 		return err
 	}
 
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Товары списаны на склада")
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Товары списаны со склада")
 	if _, err := s.bot.Send(msg); err != nil {
 		return err
 	}
