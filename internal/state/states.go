@@ -16,16 +16,19 @@ const (
 	DisableEmployee = "disable_employee"
 	ShowEmployee    = "show_employee"
 	AddCategory     = "add_category"
-	ShowCategories  = "show_categories"
-	RemoveCategory  = "remove_category"
-	EditCategory    = "edit_category"
 
-	GetBalance = "get_balance"
-	CallAI     = "call_ai"
+	ShowCategories = "show_categories"
+	RemoveCategory = "remove_category"
+	EditCategory   = "edit_category"
 
+	GetBalance          = "get_balance"
 	AddItems            = "add_items"
 	PullItems           = "pull_items"
 	RemoveLastOperation = "remove_last_op"
+
+	RetroAI  = "retro_ai"
+	FutureAI = "future_ai"
+	CallAI   = "call_ai"
 )
 
 func GetStateInputRequest(state string) string {
@@ -33,7 +36,7 @@ func GetStateInputRequest(state string) string {
 	case Start:
 		return "Введи новую команду из меню бота"
 	case AddEmployee:
-		return "Введите Telegram ID, имя, роль(director или accountant) нового сотрудника в формате \"id:имя:роль\""
+		return "Введите Telegram ID, имя, роль (director или storekeeper) нового сотрудника в формате \"id:имя:роль\""
 	case DisableEmployee:
 		return "Введите telegram ID сотрудника для удаления из системы"
 	case AddCategory:
@@ -52,7 +55,7 @@ func GetStateInputRequest(state string) string {
 		return "Введите ID категории и количество единиц товара к списанию в формате \"id:число_единиц\""
 	case RemoveLastOperation:
 		return "Введите ID категории товара для которого нужно удалить последнюю операция прихода/расхода"
-	case ShowEmployee, ShowCategories, GetBalance:
+	case ShowEmployee, ShowCategories, GetBalance, RetroAI, FutureAI:
 		return ""
 	default:
 		return "Неизвестное состояние"
@@ -128,6 +131,9 @@ func (s *StateMachine) HandleState(update *tgbotapi.Update) error {
 		return handleRemoveOperation(update, s)
 	case GetBalance:
 		return handleShowCurrentBalance(chatId, s)
+	case RetroAI, FutureAI:
+		//TODO implement me
+		return errors.New("reports implementation on the way")
 	default:
 		return errors.New("not implemented")
 	}

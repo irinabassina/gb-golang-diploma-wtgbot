@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	RoleDirector   = "director"
-	RoleAccountant = "accountant"
+	RoleDirector    = "director"
+	RoleStorekeeper = "storekeeper"
 )
 
 func NewUserService(usersRepository usersRepository, timeout time.Duration) *UserService {
@@ -108,7 +108,7 @@ func (us *UserService) UserHasRole(ctx context.Context, userID int64, roles ...s
 }
 
 func (us *UserService) validateUser(user database.User) error {
-	if user.ID == 0 || user.Name == "" || (user.Role != RoleDirector && user.Role != RoleAccountant) {
+	if user.ID == 0 || user.Name == "" || (user.Role != RoleDirector && user.Role != RoleStorekeeper) {
 		return errors.New("invalid user parameters")
 	}
 	return nil

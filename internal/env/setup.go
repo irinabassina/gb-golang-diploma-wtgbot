@@ -67,16 +67,20 @@ func Setup(ctx context.Context) (*Env, error) {
 
 func setBotCommands(bot *tgbotapi.BotAPI) {
 	setCommands := tgbotapi.NewSetMyCommands(tgbotapi.BotCommand{
-		Command:     "director",
-		Description: "Меню директора",
+		Command:     "operations",
+		Description: "операции управления товарами на складе",
 	},
 		tgbotapi.BotCommand{
-			Command:     "accountant",
-			Description: "Меню бухгалтера",
+			Command:     "categories",
+			Description: "управление категориями товаров",
 		},
 		tgbotapi.BotCommand{
-			Command:     "help",
-			Description: "Инструкция по работе с ботом",
+			Command:     "employees",
+			Description: "управление сотрудниками организации",
+		},
+		tgbotapi.BotCommand{
+			Command:     "ai",
+			Description: "ИИ анализ склада",
 		},
 	)
 
