@@ -3,7 +3,6 @@ package main
 import (
 	"WarehouseTgBot/internal/commands"
 	"WarehouseTgBot/internal/env"
-	"WarehouseTgBot/internal/state"
 	"context"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -34,26 +33,7 @@ func runMain(ctx context.Context) error {
 	for update := range updates {
 		if update.Message != nil {
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-			if e.StateMachine.GetCurrentChatState(update.Message.Chat.ID) == nil {
-				e.StateMachine.SetCurrentChatState(update.Message.Chat.ID, state.Start)
-			}
-
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-			if update.Message.IsCommand() {
-				commands.ProcessCommand(ctx, &update, &msg, e)
-				if _, err = e.TgBot.Send(msg); err != nil {
-					panic(err)
-				}
-				continue
-			}
-
-			err := e.StateMachine.HandleState(&update)
-			if err != nil {
-				msg.Text = err.Error()
-				e.TgBot.Send(msg)
-			}
-
+			commands.HandleMessage(ctx, e, update)
 		} else if update.CallbackQuery != nil {
 			commands.HandleUpdateCallBackQuery(e, update)
 		}

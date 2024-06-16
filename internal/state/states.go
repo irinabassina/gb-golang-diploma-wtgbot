@@ -4,6 +4,7 @@ import (
 	"WarehouseTgBot/internal/service"
 	"context"
 	"errors"
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sashabaranov/go-openai"
 	"time"
@@ -91,13 +92,8 @@ func (s *StateMachine) SetCurrentChatState(chatId int64, stateName string) {
 }
 
 func (s *StateMachine) HandleState(update *tgbotapi.Update) error {
-	var chatId int64
-
-	if update.Message != nil {
-		chatId = update.Message.Chat.ID
-	} else {
-		chatId = update.CallbackQuery.Message.Chat.ID
-	}
+	chatId := update.FromChat().ID
+	userId := update.SentFrom().ID
 
 	switch s.GetCurrentChatState(chatId).name {
 	case Start:
@@ -107,32 +103,85 @@ func (s *StateMachine) HandleState(update *tgbotapi.Update) error {
 		}
 		return handleCloseAi(update, s)
 	case AddEmployee:
+		if err := s.checkRole(update, userId, chatId, service.RoleDirector); err != nil {
+			return err
+		}
 		return handleAddEmployee(update, s)
 	case DisableEmployee:
+		if err := s.checkRole(update, userId, chatId, service.RoleDirector); err != nil {
+			return err
+		}
 		return handleRemoveEmployee(update, s)
 	case ShowEmployee:
+		if err := s.checkRole(update, userId, chatId, service.RoleDirector); err != nil {
+			return err
+		}
 		return handleShowEmployee(chatId, s)
 	case ShowCategories:
+		if err := s.checkRole(update, userId, chatId, service.RoleDirector, service.RoleStorekeeper); err != nil {
+			return err
+		}
 		return handleShowCategories(chatId, s)
 	case AddCategory:
+		if err := s.checkRole(update, userId, chatId, service.RoleDirector); err != nil {
+			return err
+		}
 		return handleAddCategory(update, s)
 	case RemoveCategory:
+		if err := s.checkRole(update, userId, chatId, service.RoleDirector); err != nil {
+			return err
+		}
 		return handleRemoveCategory(update, s)
 	case EditCategory:
+		if err := s.checkRole(update, userId, chatId, service.RoleDirector); err != nil {
+			return err
+		}
 		return handleEditCategory(update, s)
 	case AddItems:
+		if err := s.checkRole(update, userId, chatId, service.RoleDirector, service.RoleStorekeeper); err != nil {
+			return err
+		}
 		return handleAddItems(update, s)
 	case PullItems:
+		if err := s.checkRole(update, userId, chatId, service.RoleDirector, service.RoleStorekeeper); err != nil {
+			return err
+		}
 		return handlePullItems(update, s)
 	case RemoveLastOperation:
+		if err := s.checkRole(update, userId, chatId, service.RoleDirector); err != nil {
+			return err
+		}
 		return handleRemoveOperation(update, s)
 	case GetBalance:
+		if err := s.checkRole(update, userId, chatId, service.RoleDirector, service.RoleStorekeeper); err != nil {
+			return err
+		}
 		return handleShowCurrentBalance(chatId, s)
 	case CallAI:
+		if err := s.checkRole(update, userId, chatId, service.RoleDirector); err != nil {
+			return err
+		}
 		return handleCallAi(update, s)
 	case CloseAI:
+		if err := s.checkRole(update, userId, chatId, service.RoleDirector, service.RoleStorekeeper); err != nil {
+			return err
+		}
 		return handleCloseAi(update, s)
 	default:
 		return errors.New("not implemented")
 	}
+}
+
+func (s *StateMachine) checkRole(update *tgbotapi.Update, userId int64, chatId int64, roles ...string) error {
+	hasRole, err := s.userService.UserHasRole(s.ctx, userId, roles...)
+	if err != nil {
+		return err
+	}
+	if !hasRole {
+		s.SetCurrentChatState(chatId, Start)
+		return errors.New(
+			fmt.Sprintf("Роль вашего пользователя системы (telegram id = %d) не является допустимой для этого действия",
+				update.SentFrom().ID))
+	}
+	return nil
 }

@@ -117,3 +117,27 @@ func HandleUpdateCallBackQuery(e *env.Env, update tgbotapi.Update) {
 		}
 	}
 }
+
+func HandleMessage(ctx context.Context, e *env.Env, update tgbotapi.Update) {
+	if e.StateMachine.GetCurrentChatState(update.Message.Chat.ID) == nil {
+		e.StateMachine.SetCurrentChatState(update.Message.Chat.ID, state.Start)
+	}
+
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+
+	if update.Message.IsCommand() {
+		ProcessCommand(ctx, &update, &msg, e)
+		if _, err := e.TgBot.Send(msg); err != nil {
+			panic(err)
+		}
+		return
+	}
+
+	err := e.StateMachine.HandleState(&update)
+	if err != nil {
+		msg.Text = err.Error()
+		if _, err := e.TgBot.Send(msg); err != nil {
+			panic(err)
+		}
+	}
+}
