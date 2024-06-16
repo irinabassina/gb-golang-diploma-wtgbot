@@ -157,7 +157,7 @@ func (r *Repository) GetOperationsHistory(ctx context.Context, startTime time.Ti
 	}
 	defer rows.Close()
 
-	resultCSV := "category_id,category_name,category_unit,category_cost,current_balance,created_at,created_by,value"
+	resultCSV := "category_id,category_name,category_unit,category_cost,current_balance,created_at,created_by,operation_value"
 	for rows.Next() {
 		rowStr := ""
 		err := rows.Scan(&rowStr)
