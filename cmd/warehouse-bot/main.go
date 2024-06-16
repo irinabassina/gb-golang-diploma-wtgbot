@@ -31,6 +31,10 @@ func runMain(ctx context.Context) error {
 	updates := e.TgBot.GetUpdatesChan(u)
 
 	for update := range updates {
+		_, err := e.TgBot.Request(tgbotapi.NewChatAction(update.FromChat().ID, tgbotapi.ChatTyping))
+		if err != nil {
+			log.Println(err)
+		}
 		if update.Message != nil {
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 			commands.HandleMessage(ctx, e, update)
