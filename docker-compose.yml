@@ -1,0 +1,11 @@
+version: '1'
+
+services:
+  app:
+    environment:
+      TOKEN_TG: ${TOKEN_TG}
+      TOKEN_OPEN_AI: ${TOKEN_OPEN_AI}
+    build: .
+    image: wtgbot/latest
+    network_mode: host
+
